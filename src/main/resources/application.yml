@@ -59,3 +59,8 @@ logging:
   pattern:
     console: "%d{HH:mm:ss}  %-5level  %msg%n"
 
+emos:
+  jwt:
+    secret: abc123456
+    expire: 5
+    cache-expire: 10
