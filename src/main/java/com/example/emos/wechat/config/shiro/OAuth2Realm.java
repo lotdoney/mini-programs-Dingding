@@ -1,15 +1,15 @@
 package com.example.emos.wechat.config.shiro;
 
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAccount;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+
+@Component
 public class OAuth2Realm  extends AuthorizingRealm {
 
     @Autowired
@@ -20,6 +20,9 @@ public class OAuth2Realm  extends AuthorizingRealm {
         return token instanceof OAuth2Token;//是否是我们定义的封装类的类型
     }
 
+    /*授权时使用
+    *
+    * */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         SimpleAuthorizationInfo info =new SimpleAuthorizationInfo();
@@ -28,11 +31,15 @@ public class OAuth2Realm  extends AuthorizingRealm {
         return info;
     }
 
+    /*登陆时使用
+    *
+    * */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-            
+        //TODO从令牌中获取userID,然后检测账号是否被冻结
+        //TODO向info对象添加用户信息、Token字符串等
+        SimpleAuthenticationInfo info = new SimpleAuthenticationInfo();
 
-
-        return null;
+        return info;
     }
 }
