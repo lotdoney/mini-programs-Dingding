@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.apache.http.HttpStatus;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -62,9 +66,9 @@ public class OAuth2Filter extends AuthenticatingFilter {
 
     //shiro进行处理前，验证令牌字符串以及需要不要更新redis
     @Override
-    protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
-        HttpServletRequest req = (HttpServletRequest) servletRequest;
-        HttpServletResponse resp = (HttpServletResponse) servletResponse;
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
         resp.setContentType("text/html");
         resp.setCharacterEncoding("UTF-8");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
@@ -90,19 +94,42 @@ public class OAuth2Filter extends AuthenticatingFilter {
                 threadLocalToken.setToken(token);
             } else {
                 resp.setStatus(HttpStatus.SC_UNAUTHORIZED);
-                resp.getWriter().print("令牌已过去");
+                resp.getWriter().print("令牌已过期");
                 return false;
             }
         } catch (JWTDecodeException e) {//传入内容是否有异常
-            
+            resp.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            resp.getWriter().print("无效的令牌");
+            return false;
         }
 
-
-        return false;
-
-
+        boolean bool = executeLogin(request, response);
+        return bool;
     }
 
+    //如果认证失败，向客户端返回消息
+    @Override
+    protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
+        resp.setContentType("text/html");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
+        resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+        resp.setStatus(HttpStatus.SC_UNAUTHORIZED);
+        try{
+            resp.getWriter().print(e.getMessage());
+        }catch (Exception exception){
+
+        }
+
+        return false;
+    }
+    //
+    @Override
+    public void doFilterInternal(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
+        super.doFilterInternal(request, response, chain);
+    }
 
     //  封装提取token方法
     private String getRequestToken(HttpServletRequest request) {
