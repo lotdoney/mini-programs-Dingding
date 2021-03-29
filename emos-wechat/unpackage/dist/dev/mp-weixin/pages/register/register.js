@@ -154,7 +154,7 @@ var _default =
       uni.login({
         provider: "weixin",
         success: function success(resp) {
-          //console.log(resp.code);
+          console.log(resp.code);
           var code = resp.code;
           //获取用户信息
           uni.getUserInfo({

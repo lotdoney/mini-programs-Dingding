@@ -6,7 +6,7 @@ import lombok.Data;
 
 /**
  * tb_user
- * @author 
+ * @author
  */
 @Data
 public class TbUser implements Serializable {

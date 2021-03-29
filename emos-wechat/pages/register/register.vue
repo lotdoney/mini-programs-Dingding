@@ -22,11 +22,11 @@
 				uni.login({
 					provider:"weixin",
 					success:function(resp){
-						//console.log(resp.code);
+						console.log(resp.code);
 						let code =resp.code;
 						//获取用户信息
-					uni.getUserInfo({
-						provider:"weixin",
+					uni.getUserInfo({ 
+						provider:"weixin",  
 						success:function(resp){
 							//console.log(resp.userInfo.nickName);
 							//console.log(resp.userInfo.avatarUrl);
